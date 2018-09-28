@@ -1,4 +1,4 @@
-const DATE = 1538051516;
+const DATE = 1538115376;
 const MINUTES_IN_STEP = 15;
 
 new Vue({
@@ -8,16 +8,21 @@ new Vue({
       timeOptions: this.getTimeOptions(DATE),
       appointments: [],
       showCreateAppointmentInterface: false,
-      from: 0,
-      to: 0,
-      sektors: [],
+      from: moment.unix(DATE).hours(0).minutes(0).unix(),
+      to: moment.unix(DATE).hours(0).minutes(15).unix(),
+      timeArcs: [],
     };
   },
-  watch: {
-    appointments: {
-      handler() {
-      },
-      deep: true,
+  computed: {
+    appointmentsView() {
+      const appointments = this.appointments.map((appointment) => {
+        const from = moment.unix(appointment.from).format('LT');
+        const to = moment.unix(appointment.to).format('LT');
+
+        return `${from} - ${to}`;
+      });
+
+      return appointments.join(', ');
     }
   },
   methods: {
@@ -31,33 +36,27 @@ new Vue({
         time.add(step, 'minutes')) {
         timeOptions.push({
           label: time.format('LT'),
-          step: moment.duration(time.diff(start)).asMinutes() / step,
+          value: time.unix(),
         });
       }
 
       return timeOptions;
     },
     addAppointment() {
-      this.appointments.push({
+      const appointment = {
         from: this.from,
         to: this.to,
-      });
+      };
+
+      this.appointments.push(appointment);
 
       this.showCreateAppointmentInterface = false;
-      this.addSektor(this.appointments.length - 1)
+      this.addTimeArc(appointment)
     },
-    addSektor(index) {
-      const sektor = new Sektor('.today', {
-        size: 50,
-        stroke: 2,
-        arc: true,
-        angle: 310,
-        sectorColor: '#bD2828',
-        circleColor: 'none',
-        fillCircle: false,
-      });
+    addTimeArc(appointment) {
+      const timeArc = new TimeArc('.today', appointment.from, appointment.to);
 
-      this.sektors.push(sektor);
+      this.timeArcs.push(timeArc);
     },
   },
 });
